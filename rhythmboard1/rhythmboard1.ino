@@ -124,6 +124,10 @@ void loop() {
   else
     manualMode();
 
+if(servo2s.mappedVal < 60)
+     digitalWrite(1, HIGH);
+ else
+    digitalWrite(1, LOW);
   // turn off LEDs and solenoids if enough time has passed
   tempoLED = checkBlink(tempoLED);
   servo1LED = checkBlink(servo1LED);
@@ -222,10 +226,6 @@ void manualMode() {
     servo1LED = startBlink(servo1LED);
   }
 
- if(servo2s.mappedVal < 60)
-     digitalWrite(1, HIGH);
- else
-    digitalWrite(1, LOW);
     
   if (servo2b.state == LOW) {
     // servo2
