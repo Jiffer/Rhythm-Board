@@ -124,10 +124,7 @@ void loop() {
   else
     manualMode();
 
-if(servo2s.mappedVal < 60)
-     digitalWrite(1, HIGH);
- else
-    digitalWrite(1, LOW);
+
   // turn off LEDs and solenoids if enough time has passed
   tempoLED = checkBlink(tempoLED);
   servo1LED = checkBlink(servo1LED);
@@ -196,7 +193,7 @@ void playMode()
     //      }
     //      servo2State = !servo2State;
     //    }
-
+    
 
     if (count % sols.mappedVal == 0) {
       // trigger solenoid
@@ -204,6 +201,10 @@ void playMode()
       solLED = startBlink(solLED);
     }
   }
+  if(servo2s.mappedVal > 30)
+     digitalWrite(1, HIGH);
+ else
+    digitalWrite(1, LOW);
 }
 
 void manualMode() {
@@ -231,10 +232,14 @@ void manualMode() {
     // servo2
     servo2s = setSensor(servo2s);
     servo2.write(servo2s.mappedVal + 90);
+    if(servo2s.mappedVal < 60)
+    digitalWrite(1, HIGH);
    
   }
-  else
+  else{
     servo2.write(91);
+    digitalWrite(1, LOW);
+  }
 }
 
 ////////////////////////////////////////////////////////////
