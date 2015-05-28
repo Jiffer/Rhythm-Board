@@ -42,6 +42,7 @@ const int debounceTime = 30; // button debounce time
 buttonStruct playButton = {12, LOW, LOW, 0, 0};
 boolean play; // playing or paused
 int playLED = 4;
+int servo2LED = 1;
 
 blinkStruct tempoLED = {3, 0, 45, 0};
 
@@ -69,11 +70,11 @@ int servo2Speed = 90; // for 360 motors 90 is about stopped 0 and 180 are full s
 buttonStruct servo1b = {7, LOW, LOW, 0, 0};
 buttonStruct servo2b = {6, LOW, LOW, 0, 0};
 // servo LEDs
-blinkStruct servo1LED = {2,0,100,0};
-blinkStruct servo2LED = {1,0,100,0};
+blinkStruct servo1LED = {2, 0, 100, 0};
+blinkStruct servo2LEDblink = {1, 0, 100, 0};
 // servo sensors
-sensorStruct servo1s = {A1,8,1,1023,0}; // (pin , mappedValue, min, max)
-sensorStruct servo2s = {A2,90,1,1023,0}; // (pin , mappedValue, min, max)
+sensorStruct servo1s = {A1, 8, 1, 1023, 0}; // (pin , mappedValue, min, max)
+sensorStruct servo2s = {A2, 90, 1, 1023, 0}; // (pin , mappedValue, min, max)
 
 /////////////////////////////////////////////////
 // initialization
@@ -126,7 +127,7 @@ void loop() {
   // turn off LEDs and solenoids if enough time has passed
   tempoLED = checkBlink(tempoLED);
   servo1LED = checkBlink(servo1LED);
-  servo2LED = checkBlink(servo2LED);
+//  servo2LEDblink = checkBlink(servo2LEDblink);
   sol = checkBlink(sol);
   solLED = checkBlink(solLED);
 }
@@ -159,9 +160,9 @@ void playMode()
 
 
   // use if servo2 is a 360 degree motor
-  
+
   servo2.write(servo2s.mappedVal + 90);
-  
+
   // if in play mode and we're on a beat...  // figure out which motors need moving
   if ((millis() - lastHit) > tempo) {
     count++; // increment beat counter
@@ -179,19 +180,19 @@ void playMode()
       servo1State = !servo1State;
     }
 
-//    // trigger servo2  // blink the light
-//    if (count % servo2s.mappedVal == 0) {
-//      servo2LED = startBlink(servo2LED);
-//      if (servo2State) {
-//        servo2.write(45);
-//      }
-//      else
-//      {
-//        servo2.write(135);
-//      }
-//      servo2State = !servo2State;
-//    }
-    
+    //    // trigger servo2  // blink the light
+    //    if (count % servo2s.mappedVal == 0) {
+    //      servo2LEDblink = startBlink(servo2LEDblink);
+    //      if (servo2State) {
+    //        servo2.write(45);
+    //      }
+    //      else
+    //      {
+    //        servo2.write(135);
+    //      }
+    //      servo2State = !servo2State;
+    //    }
+
 
     if (count % sols.mappedVal == 0) {
       // trigger solenoid
@@ -215,17 +216,25 @@ void manualMode() {
   // servo1
   if (servo1b.bang == true) {
     if (servo1State == true) servo1.write(135);
-    else servo1.write(45);   
+    else servo1.write(45);
+    servo1State = !servo1State;
+
     servo1LED = startBlink(servo1LED);
   }
-  
-   if (servo2b.state == LOW){
-     // servo2
-     if (servo2b.state == LOW) {servo2s = setSensor(servo2s);}
-     servo2.write(servo2s.mappedVal + 90);
-   }
-   else
-     servo2.write(91);
+
+ if(servo2s.mappedVal < 60)
+     digitalWrite(1, HIGH);
+ else
+    digitalWrite(1, LOW);
+    
+  if (servo2b.state == LOW) {
+    // servo2
+    servo2s = setSensor(servo2s);
+    servo2.write(servo2s.mappedVal + 90);
+   
+  }
+  else
+    servo2.write(91);
 }
 
 ////////////////////////////////////////////////////////////
@@ -302,7 +311,7 @@ sensorStruct readSensor(sensorStruct s) {
 
 sensorStruct setSensor(sensorStruct s) {
   int val = analogRead(s.pin);
-  val = map(val, s.minVal, s.maxVal, 0, s.range+1); // map a little beyond the edges and constrain
+  val = map(val, s.minVal, s.maxVal, 0, s.range + 1); // map a little beyond the edges and constrain
   s.mappedVal = constrain(val, 1, s.range); // just to make sure
   return s;
 }
