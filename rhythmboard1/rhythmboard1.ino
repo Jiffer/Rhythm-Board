@@ -40,6 +40,7 @@ Top to bottom on the board:
 const int debounceTime = 30; // button debounce time
 
 buttonStruct playButton = {12, LOW, LOW, 0, 0};
+buttonStruct resetButton = {8, LOW, LOW, 0, 0};
 boolean play; // playing or paused
 int playLED = 4;
 int servo2LED = 1;
@@ -104,11 +105,19 @@ void setup() {
   pinMode(9, OUTPUT);
 }
 
+void(* resetFunc) (void) = 0;
+
 ////////////////////////////////////////////////////////////
 //////////////////////// MAIN LOOP /////////////////////////
 ////////////////////////////////////////////////////////////
 void loop() {
-
+  // check reset button
+  resetButton = readDebounce(resetButton);
+  if (resetButton.bang) {
+   resetPressed();
+   resetFunc();
+  }
+  
   // check if play button has been pressed
   // if so toggle state
   playButton = readDebounce(playButton);
@@ -128,7 +137,7 @@ void loop() {
   // turn off LEDs and solenoids if enough time has passed
   tempoLED = checkBlink(tempoLED);
   servo1LED = checkBlink(servo1LED);
-//  servo2LEDblink = checkBlink(servo2LEDblink);
+  //  servo2LEDblink = checkBlink(servo2LEDblink);
   sol = checkBlink(sol);
   solLED = checkBlink(solLED);
 }
@@ -193,7 +202,7 @@ void playMode()
     //      }
     //      servo2State = !servo2State;
     //    }
-    
+
 
     if (count % sols.mappedVal == 0) {
       // trigger solenoid
@@ -201,9 +210,9 @@ void playMode()
       solLED = startBlink(solLED);
     }
   }
-  if(servo2s.mappedVal > 30)
-     digitalWrite(1, HIGH);
- else
+  if (servo2s.mappedVal > 30)
+    digitalWrite(1, HIGH);
+  else
     digitalWrite(1, LOW);
 }
 
@@ -227,16 +236,16 @@ void manualMode() {
     servo1LED = startBlink(servo1LED);
   }
 
-    
+
   if (servo2b.state == LOW) {
     // servo2
     servo2s = setSensor(servo2s);
     servo2.write(servo2s.mappedVal + 90);
-    if(servo2s.mappedVal < 60)
-    digitalWrite(1, HIGH);
-   
+    if (servo2s.mappedVal < 60)
+      digitalWrite(1, HIGH);
+
   }
-  else{
+  else {
     servo2.write(91);
     digitalWrite(1, LOW);
   }
@@ -322,12 +331,22 @@ sensorStruct setSensor(sensorStruct s) {
 }
 
 
+void resetPressed(){
+  digitalWrite(4, LOW); // play light
+  digitalWrite(3, LOW); // tempo light
+  digitalWrite(0, LOW); // sol
+  digitalWrite(1, LOW); // servo2
+  digitalWrite(2, LOW); // servo1
+  
+  servo1s.minVal = 1023;
+  servo1s.maxVal = 0;
+  servo2s.minVal = 1023;
+  servo2s.maxVal = 0;
 
-
-
-
-
-
-
+  sols.minVal = 1023;
+  sols.maxVal = 0;
+  
+}
+  
 
 
